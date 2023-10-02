@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Socket.IO chat</title>
+    <style>
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form id="form">
+      <input id="input" autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+    <script src="/node_modules/socket.io/client-dist/socket.io.js"></script>
+    <script>
+        const newMessageFun = (msg, isMyOwn) => {
+            const item = document.createElement('li');
+            if(isMyOwn)
+            {
+                item.setAttribute('id', 'me')
+            } else {
+                item.setAttribute('id', 'someone')
+            }
+            item.textContent = msg;
+            conversationElement.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+
+        const socket = io("localhost:3000", {
+            transports: ['websocket']
+        });
+
+        const messageElement = document.querySelector('#input');
+        const conversationElement = document.querySelector('#messages');
+        const messageFormElement = document.querySelector('form');
+
+        messageFormElement.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if(messageElement.value) {
+                socket.emit('chat message', messageElement.value);
+                newMessageFun(messageElement.value, true);
+                messageElement.value = "";
+            }     
+        })
+
+        socket.on('chat message', (msg) => {
+            newMessageFun(msg, false);
+        })
+    </script>
+  </body>
+</html>
